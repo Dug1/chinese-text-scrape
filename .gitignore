@@ -1,0 +1,19 @@
+#Ignore all for whitelisting
+*
+#.gitignore
+!.gitignore
+
+#coffeefiles
+!*.coffee
+
+#subdirectories
+!static/
+!static/*
+!templates/
+!templates/*
+
+#index page
+!*.html
+
+#yml
+!*.yml
