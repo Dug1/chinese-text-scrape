@@ -1,0 +1,14 @@
+{
+  "name":"chinese-text-search",
+  "version":"0.0.1",
+  "author":"Daguan Lu <daguanlu@gmail.com>",
+  "description":"Search",
+  "dependencies": {
+    "cheerio":">=0.20.0",
+    "js-yaml":">=3.6.1",
+    "request":">=2.72.0",
+    "request-promise":"3.0.0",
+    "urlencode":">=1.1.0",
+    "bluebird":">=3.4.0"
+  }
+}

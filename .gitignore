@@ -3,6 +3,9 @@
 #.gitignore
 !.gitignore
 
+#package
+!package.json
+
 #coffeefiles
 !*.coffee
 
