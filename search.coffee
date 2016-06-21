@@ -179,7 +179,7 @@ search_no_years = (term, database) ->
 
 search_no_years_all = (term) ->
   mapping = {}
-  sources = ["舊唐書", "新唐書", "舊五代史", "新五代史", "宋史", "遼史", "金史", "元史", "明史", "清史稿"]
+  sources = ["舊唐書", "新唐書", "舊五代史", "新五代史", "宋史", "遼史", "金史", "元史", "明史", "清史稿", "史記", "漢書", "後漢書", "三國志", "晉書", "宋書", "南齊書", "梁書", "陳書", "魏書", "北齊書", "周書", "隋書", "南史", "北史"]
   Promise.mapSeries(sources,((source) -> search_no_years(term, source)))
   .then (results) ->
     for result, i in results

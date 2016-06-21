@@ -149,30 +149,31 @@ scrape = (master_url, database, data_root) ->
   .catch (err)->
     console.error err
 
-#scrape("https://zh.wikisource.org/zh/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91", "資治通鑑", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/zh/%E7%BA%8C%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91","續資治通鑑", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8", "舊唐書", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8", "新唐書", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E8%88%8A%E4%BA%94%E4%BB%A3%E5%8F%B2", "舊五代史", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E6%96%B0%E4%BA%94%E4%BB%A3%E5%8F%B2", "新五代史", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E5%AE%8B%E5%8F%B2", "宋史", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E9%81%BC%E5%8F%B2", "遼史", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E9%87%91%E5%8F%B2", "金史", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E5%85%83%E5%8F%B2", "元史", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E6%98%8E%E5%8F%B2", "明史", "data")
-#.then () ->
-#  scrape("https://zh.wikisource.org/wiki/%E6%B8%85%E5%8F%B2%E7%A8%BF", "清史稿", "data")
-scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
+scrape("https://zh.wikisource.org/zh/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91", "資治通鑑", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/zh/%E7%BA%8C%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91","續資治通鑑", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8", "舊唐書", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8", "新唐書", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E8%88%8A%E4%BA%94%E4%BB%A3%E5%8F%B2", "舊五代史", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E6%96%B0%E4%BA%94%E4%BB%A3%E5%8F%B2", "新五代史", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E5%AE%8B%E5%8F%B2", "宋史", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E9%81%BC%E5%8F%B2", "遼史", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E9%87%91%E5%8F%B2", "金史", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E5%85%83%E5%8F%B2", "元史", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E6%98%8E%E5%8F%B2", "明史", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E6%B8%85%E5%8F%B2%E7%A8%BF", "清史稿", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
 .then () ->
   scrape("https://zh.wikisource.org/wiki/%E6%BC%A2%E6%9B%B8", "漢書", "data")
 .then () ->
@@ -184,18 +185,22 @@ scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
 .then () ->
   scrape("https://zh.wikisource.org/wiki/%E5%AE%8B%E6%9B%B8", "宋書", "data")
 .then () ->
-  scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
+  scrape("https://zh.wikisource.org/wiki/%E5%8D%97%E9%BD%8A%E6%9B%B8", "南齊書", "data")
 .then () ->
-  scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
+  scrape("https://zh.wikisource.org/wiki/%E6%A2%81%E6%9B%B8", "梁書", "data")
 .then () ->
-  scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
+  scrape("https://zh.wikisource.org/wiki/%E9%99%B3%E6%9B%B8", "陳書", "data")
 .then () ->
-  scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
+  scrape("https://zh.wikisource.org/wiki/%E9%AD%8F%E6%9B%B8", "魏書", "data")
 .then () ->
-  scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
+  scrape("https://zh.wikisource.org/wiki/%E5%8C%97%E9%BD%8A%E6%9B%B8", "北齊書", "data")
 .then () ->
-  scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
+  scrape("https://zh.wikisource.org/wiki/%E5%91%A8%E6%9B%B8", "周書", "data")
 .then () ->
-  scrape("https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98", "史記", "data")
+  scrape("https://zh.wikisource.org/wiki/%E9%9A%8B%E6%9B%B8", "隋書", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E5%8D%97%E5%8F%B2", "南史", "data")
+.then () ->
+  scrape("https://zh.wikisource.org/wiki/%E5%8C%97%E5%8F%B2", "北史", "data")
 .then () ->
   console.log "done"
