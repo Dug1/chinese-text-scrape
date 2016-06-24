@@ -4,7 +4,6 @@ fs = Promise.promisifyAll(require 'fs')
 yaml = require 'js-yaml'
 url = require 'url'
 querystring = require 'querystring'
-term_template = require './templates/term_template.coffee'
 
 PORT = 3000
 
@@ -95,28 +94,19 @@ yml = (data) ->
     return_body.body = yaml.safeDump(data)
     Promise.resolve(return_body)
 
+#Renders with a template
+render = (template, args) ->
+  Promise.resolve({
+    headers: {
+      'Content-Type': 'text/html'
+    },
+    body:require("./templates/#{template}.coffee")(args)
+    statusCode: 200
+  })
+
 route("^/static/(.*\.css)$", css_manager)
+
 ########################################### Framework End ########################################### 
-
-find_files = (root) ->
-  fs.statAsync(root)
-  .then (stat) ->
-    if stat.isDirectory()
-      fs.readdirAsync(root)
-      .then (files) ->
-        Promise.all(files.map((file) -> find_files("#{root}/#{file}")))
-      .then (children) ->
-        return children.reduce ((x, y) -> x.concat(y)), []
-    else Promise.resolve([root])
-  .then (files) ->
-    return files
-  .catch (e) ->
-    console.log e
-    return []
-
-main = (args, query)->
-  html("index.html")
-
 
 search_file = (file, term) ->
   fs.readFileAsync(file)
@@ -148,44 +138,6 @@ search_file = (file, term) ->
     console.log "Finished analyzing #{file} for #{term}"
     return histogram
 
-search_no_years = (term, database) ->
-  root = index.roots[database]
-  find_files(root)
-  .then (files) ->
-    promises = files.map (file) ->
-      console.log "Searching #{file}"
-      link = "#"
-      fs.readFileAsync(file)
-      .then (body) ->
-        data = yaml.safeLoad(body)
-        link = data.link
-        results = []
-        for passage in data.passages
-          result =
-            text:passage.text
-            hits: []
-          while (index = passage.text.indexOf(term, index)) > 0
-            result.hits.push(index)
-            index += 1
-          
-          if result.hits.length > 0
-            results.push result  
-        return results
-      .then (results) ->
-        return {file: file, link:link, results: results}
-    Promise.all(promises)
-    .then (results) ->
-      return results.filter (result) -> result.results.length > 0
-
-search_no_years_all = (term) ->
-  mapping = {}
-  sources = ["舊唐書", "新唐書", "舊五代史", "新五代史", "宋史", "遼史", "金史", "元史", "明史", "清史稿", "史記", "漢書", "後漢書", "三國志", "晉書", "宋書", "南齊書", "梁書", "陳書", "魏書", "北齊書", "周書", "隋書", "南史", "北史"]
-  Promise.mapSeries(sources,((source) -> search_no_years(term, source)))
-  .then (results) ->
-    for result, i in results
-      mapping[sources[i]] = result
-    return mapping
-
 #Searches all files for a term in a database and returns a histogram of the closest upstream instance
 search_all = (term, database) ->
   promises = db[database].map((file) -> search_file(file + ".json", term))
@@ -199,30 +151,85 @@ search_all = (term, database) ->
         master[date] += count
     return master
 
-search = (args, query)->
-  string = query.term
-  db = query.database
-  no_years = query.no_years
-  if db == "all"
-    search_no_years_all(string)
-    .then (data) ->
-      html_str(term_template({term:string, results:data}))
-  else
-    (if no_years == "true" then search_no_years else search_all)(string, db)
-    .then (data) ->
-      html_str(term_template({term:string, results:{"#{db}": data}}))
+############################## New handlers #############################
+
+process_file_generic = (term, document) ->
+  last_indicator = null
+  notable_passages = []
+  found_hit = false
+  for passage in document.passages
+    hits = []
+    while (index = passage.text.indexOf(term, index)) > 0
+      found_hit = true
+      hits.push(index)
+      index += 1
+
+    dates = []
+    indicator_index = -1
+    for number in passage.numbers
+      for indicator in passage.indicators
+        if indicator.index > number.index
+          indicator_index -= 1
+          break
+        indicator_index += 1
       
+      indicator = if indicator_index == -1 then last_indicator else passage.indicators[indicator_index]
+      if indicator?
+        dates.push({index: number.index, date: indicator.date + number.number - 1, length:("#{number.number}".length + 1)})
+      else
+        dates.push({index: number.index, length:("#{number.number}".length + 1)})
+
+      if passage.indicators.length > 0
+        last_indicator = passage.indicators[passage.indicators.length - 1]
+
+    if hits.length > 0 or passage.indicators.length > 0 or dates.length > 0
+      notable_passages.push({text:passage.text, hits:hits, indicators: passage.indicators, dates: dates})
+
+  if found_hit
+    return notable_passages
+  else
+    return []
+
+search_generic = (term, database) ->
+  console.log "Searching #{database}"
+  files = directory.directory[database]
+  promises = files.map (file) ->
+    link = "#"
+    fs.readFileAsync(file)
+    .then (body) ->
+      data = JSON.parse(body)
+      return {file: file, link:link, results: process_file_generic(term, data)}
+
+  Promise.all(promises)
+  .then (results) ->
+    return results.filter (result) -> result.results.length > 0
+
+search = (args, query) ->
+  if query.database == "all"
+    Promise.mapSeries(Object.keys(directory.directory), ((dir) -> search_generic(query.term, dir)))
+    .then (results) -> 
+      all = {}
+      for key, i in Object.keys(directory.directory)
+        all[key] = results[i]
+
+      render("result", {term:query.term, results:all})
+  else
+    search_generic(query.term, query.database)
+    .then (result) ->
+      results = {}
+      results[query.database] = result
+      render("result", {term:query.term, results:results})
+
+main = (args, query) ->
+  keys = Object.keys(directory.directory)
+  keys.push("all")
+  render("index", {db:keys})
+
 route("^[/]?$", main)
 route("^/search/?$", search)
 
-index = yaml.safeLoad(fs.readFileSync("index.json"))
-# Find all files that actually have dates, seperated by database
-db = {}
-for name, dates of index.data
-  files = {}
-  for date in dates
-    files[date.path] = true
-  db[name] = Object.keys(files)
+#Open up the directory
+directory = JSON.parse(fs.readFileSync("directory.json"))
 
 http.createServer (req, res) ->
   url_obj = url.parse(req.url)

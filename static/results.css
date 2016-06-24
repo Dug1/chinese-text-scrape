@@ -1,5 +1,15 @@
-span.match {
+span.hit {
     color:#3399ff;
+    font-weight:bold;
+}
+
+span.indicator {
+    color:#33cc33;
+    font-weight:bold;
+}
+
+span.date {
+    color:#ff1a1a;
     font-weight:bold;
 }
 

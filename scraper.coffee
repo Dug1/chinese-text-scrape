@@ -29,27 +29,17 @@ handle_section = (root_url, root, section, links, database) ->
       .then (body) ->
         passages = processor.split(body)
         passage_dates = []
-        for passage, i in passages
-          dates = processor.parse_dates(passage, database) 
-          passage.dates = dates
-          for date in dates
-            index_date = 
-              year: date.year
-              index: date.index
-              passage: i
-              path: path_name
-              url: url_to_use
-            passage_dates.push(index_date)
+        dates_by_passage = processor.parse_dates(passages, database)
+        for value, i in dates_by_passage
+          passages[i].numbers = value.numbers
+          passages[i].indicators = value.indicators
 
         console.log "Writing #{path_name}..."
-        fs.writeFileAsync(path_name + ".json", yaml.safeDump({link: url_to_use, filename: link.name, passages:passages}), {flag: 'w'})
+        fs.writeFileAsync(path_name + ".json", JSON.stringify({link: url_to_use, filename: link.name, passages:passages}), {flag: 'w'})
         .then ()->
-          return passage_dates
+          return "#{path_name}.json"
         .catch (err) -> console.log(err)
     Promise.all(promises)
-    .then (dates)->
-      return dates.reduce ((x, y) -> x.concat(y)), []
-      
 
 #Copies the object onto disk, downloading required pages
 save = (object, database) ->
@@ -76,25 +66,22 @@ save = (object, database) ->
     for section, links of object.sections
       promises.push(handle_section(object.root, root, section, links, database))
     Promise.all(promises)
-  .then (dates)->
-    #Congregate dates and save them to the root
-    congregate = dates.reduce (x, y) -> x.concat(y)
-    fs.readFileAsync("index.json").then (text) ->
-      console.log "Found index.json"
-      index = yaml.safeLoad(text)
-      index.data[database] = congregate
-      index.roots[database] = root
-      console.log "Writing index.json"
-      fs.writeFileAsync("index.json", yaml.safeDump(index))
+  .then (paths)->
+    #Collect files paths
+    congregate = paths.reduce (x, y) -> x.concat(y)
+    fs.readFileAsync("directory.json").then (text) ->
+      console.log "Found directory.json"
+      index = JSON.parse(text)
+      index.directory[database] = congregate
+      console.log "Writing directory.json"
+      fs.writeFileAsync("directory.json", JSON.stringify(index))
     .catch (e) ->
-      console.log "No index.json"
+      console.log "No directory.json"
       index = 
-        data: {}
-        roots: {}
-      index.data[database] = congregate
-      index.roots[database] = root
-      console.log "Writing index.json"
-      fs.writeFileAsync("index.json", yaml.safeDump(index))
+        directory: {}
+      index.directory[database] = congregate
+      console.log "Writing directory.json"
+      fs.writeFileAsync("directory.json",JSON.stringify(index))
 
 scrape = (master_url, database, data_root) ->
   request(master_url)
@@ -155,7 +142,7 @@ scrape("https://zh.wikisource.org/zh/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91", "資
 .then () ->
   scrape("https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8", "舊唐書", "data")
 .then () ->
-  scrape("https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8", "新唐書", "data")
+ scrape("https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8", "新唐書", "data")
 .then () ->
   scrape("https://zh.wikisource.org/wiki/%E8%88%8A%E4%BA%94%E4%BB%A3%E5%8F%B2", "舊五代史", "data")
 .then () ->

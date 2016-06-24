@@ -29,83 +29,117 @@ parse_number = (string) ->
       base *= 10
   return base
 
-parse_one = (passage) ->
-  metadata = date_data.metadata.續資治通鑑
+#This is then general parser
+#Finds keywords and keeps track of them, trying to match years to a year,
+#using the closest key word it can find to indicate a year 
+parse_general = (passages, metadata)->
+  year_indicators = metadata.indicators
+  last_indicator = null
+  date_passages = []
+  for passage in passages
+    #If we have no indicators, push on empty arrays instead
+    if Object.keys(year_indicators).length > 0
+      #First we find indicators in the passage
+      indicators = []
+      indicator_regexp = new RegExp("(#{Object.keys(year_indicators).join("|")})", "g")
+      while (results = indicator_regexp.exec(passage.text))?
+        indicators.push({index: results.index, term:results[0], date:year_indicators[results[0]]})
+
+      #Then we find the possible dates
+      dates = []
+      date_regexp = new RegExp(date_regexp_str, "g")
+      while (result = date_regexp.exec(passage.text))?
+        number = parse_number(result[0])
+        dates.push({number: number, index: result.index})
+
+      date_passages.push({indicators: indicators, numbers:dates})
+    else
+      date_passages.push({indicators: [], numbers:[]})
+  
+  return date_passages
+
+parse_one = (passages, metadata) ->
+  passage_dates = {}
   year_indicators = metadata.indicators
   year_range = metadata.range
-  dates = []
-  date_regexp = new RegExp("(#{Object.keys(year_indicators).join("|")})?" + date_regexp_str, "g")
-  while (results = date_regexp.exec(passage.text))?
-    [match, indicator, digits, year] = results
-    new_date =
-      year: -1
-      index: results.index
 
-    #Accept and indicator and and some numerical value or just a string of numbers only
-    if indicator?
-      new_date.year = year_indicators[indicator] + parse_number(digits) - 1
-    else if (new RegExp("^" + number_regexp_str + "+$")).exec(digits)?
-      new_date.year = parse_number(digits)
-    else
-      continue    
+  for passage in passages
+    dates = []
+    date_regexp = new RegExp("(#{Object.keys(year_indicators).join("|")})?" + date_regexp_str, "g")
+    while (results = date_regexp.exec(passage.text))?
+      [match, indicator, digits, year] = results
+      new_date =
+        year: -1
+        index: results.index
 
-    #Ignore dates outside the given range
-    if new_date.year in [year_range[0]..year_range[1]]
-      dates.push new_date
+      #Accept and indicator and and some numerical value or just a string of numbers only
+      if indicator?
+        new_date.year = year_indicators[indicator] + parse_number(digits) - 1
+      else if (new RegExp("^" + number_regexp_str + "+$")).exec(digits)?
+        new_date.year = parse_number(digits)
+      else
+        continue    
 
-  return dates 
+      #Ignore dates outside the given range
+      if new_date.year in [year_range[0]..year_range[1]]
+        dates.push new_date
+
+    passages_dates.push(dates)
+
+  return passage_dates
   
-parse_two = (passage) ->
-  metadata = date_data.metadata.資治通鑑
+parse_two = (passage, metadata) ->
   year_indicators = metadata.indicators
-  dates = []
-  date_regexp = new RegExp("(#{Object.keys(year_indicators).join("|")})" + date_regexp_str, "g")
-  while (results = date_regexp.exec(passage.text))?
-    [match, indicator, digits, year] = results
-    new_date =
-      year: year_indicators[indicator] * parse_number(digits)
-      index: results.index
+  for passage in passages
+    dates = []
+    date_regexp = new RegExp("(#{Object.keys(year_indicators).join("|")})" + date_regexp_str, "g")
+    while (results = date_regexp.exec(passage.text))?
+      [match, indicator, digits, year] = results
+      new_date =
+        year: year_indicators[indicator] * parse_number(digits)
+        index: results.index
 
-    dates.push new_date
+      dates.push new_date
+    passage_dates.push_dates
 
-  return dates 
+  return passage_dates 
 
 parse_none = (passage) ->
   return []
 
 #Lookup for parsers
 lookup =
-  續資治通鑑: parse_one
-  資治通鑑: parse_two
-  舊唐書: parse_none
-  新唐書: parse_none
-  舊五代史: parse_none
-  新五代史: parse_none
-  宋史: parse_none
-  遼史: parse_none
-  金史: parse_none
-  元史: parse_none
-  明史: parse_none
-  清史稿: parse_none
-  史記: parse_none
-  漢書: parse_none
-  後漢書: parse_none
-  三國志: parse_none
-  晉書: parse_none
-  宋書: parse_none
-  南齊書: parse_none
-  梁書: parse_none
-  陳書: parse_none
-  魏書: parse_none
-  北齊書: parse_none
-  周書: parse_none
-  隋書: parse_none
-  南史: parse_none
-  北史: parse_none
+  續資治通鑑: parse_general
+  資治通鑑: parse_general
+  舊唐書: parse_general
+  新唐書: parse_general
+  舊五代史: parse_general
+  新五代史: parse_general
+  宋史: parse_general
+  遼史: parse_general
+  金史: parse_general
+  元史: parse_general
+  明史: parse_general
+  清史稿: parse_general
+  史記: parse_general
+  漢書: parse_general
+  後漢書: parse_general
+  三國志: parse_general
+  晉書: parse_general
+  宋書: parse_general
+  南齊書: parse_general
+  梁書: parse_general
+  陳書: parse_general
+  魏書: parse_general
+  北齊書: parse_general
+  周書: parse_general
+  隋書: parse_general
+  南史: parse_general
+  北史: parse_general
 
 #Defers to appropriate database parser
 exports.parse_dates = (passage, database) ->
-  lookup[database](passage)
+  lookup[database](passage, date_data.metadata[database])
 
 #Spilts the text into passages
 exports.split = (text) ->
