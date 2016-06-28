@@ -8,6 +8,12 @@ urlencode = require('urlencode')
 processor = require('./processor.coffee')
 yaml = require('js-yaml')
 
+#scraper.coffee
+#
+#Used to generate data/. See the bottom of the file for example usage
+#This file uses date.yml for metadata on databases.
+#Also generates a directory.json file for easy indexing
+
 MAX_FILE_SIZE = 60
 UNICODE_SIZE = 2
 FILENAME_SIZE = Math.floor(MAX_FILE_SIZE / UNICODE_SIZE) - 5
@@ -83,6 +89,9 @@ save = (object, database) ->
       console.log "Writing directory.json"
       fs.writeFileAsync("directory.json",JSON.stringify(index))
 
+#Master url is the page containg the scrapable links, database
+#signfies the database to in date.yml to use and data_root tells
+#where to store the scraped data.
 scrape = (master_url, database, data_root) ->
   request(master_url)
   .then (body) ->

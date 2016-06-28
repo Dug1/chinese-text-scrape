@@ -16,18 +16,27 @@ Used to process html files and will do the following
 
 #Parses integer from a Chinese numeral string
 #Ignores the "base words and constructs the numeral from there
-#Special treatment numbers 10-20
-parse_number = (string) ->
-  number_regexp = new RegExp(number_regexp_str, "g")
-  base = if string[0] == "十" then 1 else 0
-  matches = string.match(number_regexp)
-  if matches
-    for s in matches
-      base *= 10
-      base += digits[s]
+#Identifies each number as either a literal of numbers, or a chinese numeral
+parse_number = (string) -> 
+  plain_number = new RegExp("^[#{Object.keys(digits).join("|")}]+$")
+  number = 0
+  if string.match(plain_number)
+    for s in string
+      number *= 10
+      number += digits[s]
   else
-      base *= 10
-  return base
+    number = 0
+    digit = 1
+    for s in string
+      if digits[s]?
+        digit = digits[s]
+      else if base[s]?
+        number += digit * base[s]
+
+    if digits[string[string.length - 1]]?
+      number += digits[string[string.length - 1]]
+
+  return number
 
 #This is then general parser
 #Finds keywords and keeps track of them, trying to match years to a year,
@@ -49,8 +58,8 @@ parse_general = (passages, metadata)->
       dates = []
       date_regexp = new RegExp(date_regexp_str, "g")
       while (result = date_regexp.exec(passage.text))?
-        number = parse_number(result[0])
-        dates.push({number: number, index: result.index})
+        number = parse_number(result[1])
+        dates.push({number: number, term:result[1], index: result.index})
 
       date_passages.push({indicators: indicators, numbers:dates})
     else
