@@ -118,7 +118,7 @@ search = (args, query) ->
 main = (args, query) ->
   keys = Object.keys(directory.directory)
   keys.push("all")
-  render("index", {db:keys})
+  server.render("index", {db:keys})
 
 #Open up the directory
 directory = JSON.parse(fs.readFileSync("directory.json"))
